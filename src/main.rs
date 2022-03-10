@@ -15,9 +15,10 @@ use sdl2::video::WindowContext;
 use blocks::block::Block;
 use pieces::piece::Piece;
 use sdl2::rect::Rect;
+use rand::Rng;
+use crate::blocks::stack::Stack;
 
 pub fn main() {
-
     //Initialisation
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
@@ -58,15 +59,26 @@ pub fn main() {
 
     blocks::block::init_textures(&mut blocks_t);
 
-    let mut lastact = 0;
+    let mut lastact:i32 = 0;
 
+    let mut rng = rand::thread_rng(); // Random generator
+    let mut currentpiece:Piece = Piece::newActive(rng.gen_range(0,7));
+    let mut blockstack:Stack = Stack::init_stack();
 
-    let mut testpiece = Piece::newActive(0);
-
-
+    let mut rotating:bool = false;
+    let mut goleft:bool = false;
+    let mut goright:bool = false;
+    let mut godown:bool = false;
 
     'running: loop {
         //Boucle du jeu
+
+        rotating = false;
+        goright = false;
+        goleft = false;
+        godown = false;
+
+
         canvas.clear();
         canvas.copy(&bg,None, None).unwrap();
         for event in event_pump.poll_iter() {
@@ -75,17 +87,48 @@ pub fn main() {
                 Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
                     break 'running
                 },
+                Event::KeyDown {keycode: Some(Keycode::Space),..} =>{
+                    rotating = true;
+                },
+                Event::KeyDown {keycode: Some(Keycode::Left), .. } =>{
+                    goleft = true;
+                },
+                Event::KeyDown {keycode: Some(Keycode::Right), .. } =>{
+                    goright = true;
+                },
+                Event::KeyDown {keycode: Some(Keycode::Down), .. } =>{
+                    godown = true;
+                }
                 _ => {}
             }
         }
         // Le reste de la boucle
+
+        if (goright){ currentpiece.moveRight(&blockstack); }
+        if (goleft){ currentpiece.moveLeft(&blockstack); }
+
+        if (rotating){ currentpiece.rotate(&blockstack,true); }
+
+        if (godown){
+            if (!currentpiece.go_down(&blockstack)){
+                currentpiece.pose(&mut blockstack);
+                currentpiece = Piece::newActive(rng.gen_range(0,7))
+            }
+        }
+
         lastact += 1;
         if (lastact>=29) {
             lastact = 0;
             //Toutes les 0.5s (on descend les pièces)
-            testpiece.go_down();
+            if (!currentpiece.go_down(&blockstack)){
+                currentpiece.pose(&mut blockstack);
+                currentpiece = Piece::newActive(rng.gen_range(0,7))
+            }
         }
-        testpiece.draw(&mut canvas, &mut blocks_t);
+
+        currentpiece.draw(&mut canvas, &mut blocks_t);
+
+        blockstack.draw(&mut canvas, &mut blocks_t);
         canvas.present();
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));// 60 FPS
     }

@@ -17,8 +17,8 @@ const BCOLORS:[[u8; 3]; 7] = [
     [255, 128, 128]
 ];
 
-const DECAL_X: u8 = 128;
-const DECAL_Y: u8 = 3;
+const DECAL_X: i32 = 120;
+const DECAL_Y: i32 = 3;
 
 
 
@@ -45,18 +45,25 @@ impl<T> Block<T>{
 
     pub fn set_x(&mut self, x:i32){
         self.rect.set_x(x);
-    }
+    } // ! met à jour l'abscisse réelle, pas celle dans la grille
 
     pub fn get_x(&mut self, x:i32){
         self.rect.set_x(x);
+    }
+
+    pub fn set_y(&mut self, y:i32){
+        self.rect.set_y(y);
+    }
+
+    pub fn get_y(&mut self, y:i32){
+        self.rect.set_y(y);
     }
 }
 
 impl Block<[u8;2]>{
     pub fn draw_grid(&mut self, can:&mut WindowCanvas, blockt:&mut [Texture; 7]){
-        self.rect.set_x((self.coords[0] * 28 + DECAL_X) as i32);
-        self.rect.set_y((self.coords[1] * 28 + DECAL_Y) as i32);
-        println!("{}",self.coords[0]);
+        self.rect.set_x(self.coords[0] as i32 * 28 + DECAL_X );
+        self.rect.set_y(self.coords[1] as i32 * 28 + DECAL_Y );
         can.copy(blockt[self.color].borrow(), None, self.rect).unwrap();
     }
 }
