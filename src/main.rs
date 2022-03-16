@@ -3,6 +3,7 @@ extern crate sdl2;
 
 mod blocks;
 mod pieces;
+mod music;
 
 use sdl2::pixels::{Color, PixelFormatEnum};
 use sdl2::event::Event;
@@ -16,11 +17,15 @@ use blocks::block::Block;
 use pieces::piece::Piece;
 use sdl2::rect::Rect;
 use rand::Rng;
+use sdl2::audio;
 use crate::blocks::stack::Stack;
+use crate::music::play_music;
 
 pub fn main() {
     //Initialisation
     let sdl_context = sdl2::init().unwrap();
+
+    play_music(&sdl_context);
     let video_subsystem = sdl_context.video().unwrap();
 
     //Initialisation fenêtre
@@ -133,4 +138,5 @@ pub fn main() {
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));// 60 FPS
     }
 }
+
 

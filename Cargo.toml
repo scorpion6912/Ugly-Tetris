@@ -9,5 +9,6 @@ edition = "2021"
 rand = "0.7.3"
 
 [dependencies.sdl2]
-features = ["use_mac_framework"]
+features = ["use_mac_framework","mixer"]
+default-features = false
 version = "0.35"
