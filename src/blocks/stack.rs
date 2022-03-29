@@ -46,7 +46,7 @@ impl Stack{
         }
     }
     
-    pub fn isTaken(&self, x:i16, y:i16) -> bool {
+    pub fn is_taken(&self, x:i16, y:i16) -> bool {
         if (x>9 || y>18 || x<0 || y<0){ return true; }
         return self.blocks[x as usize][y as usize] < 10;
     }

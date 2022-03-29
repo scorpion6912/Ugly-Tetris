@@ -23,36 +23,54 @@ impl AudioCallback for CopyWav {
 
 
 pub fn play_music(context: &sdl2::Sdl){
-    let audio_subsystem = context.audio().unwrap();
-    let music = audio::AudioSpecWAV::load_wav("./res/ugly_music.wav").unwrap();
 
-
-    let audiospec:AudioSpecDesired = AudioSpecDesired{ freq: Some(44100), channels: Some(1), samples: None };
-
-
-
-    let format:AudioFormat = music.format.clone();
-
-    let cvt = audio::AudioCVT::new(
-        music.format,music.channels,music.freq,
-        music.format,audiospec.channels.unwrap(),audiospec.freq.unwrap()).unwrap().convert(music.buffer().to_vec());
-
-    let wav_copy = CopyWav{ bits: cvt, pos: 0 };
-    let audio_device = audio_subsystem.open_playback(None, &audiospec, move |_spec| {
-        wav_copy
-    }).unwrap();
-
-    audio_device.resume();
-
-    std::thread::sleep_ms(5000);
 }
 */
 
 
-use std::borrow::Borrow;
+use std::borrow::{Borrow, BorrowMut};
+use sdl2::mixer::{AUDIO_S16LSB, DEFAULT_CHANNELS, InitFlag, Music};
+use std::thread;
+use sdl2::TimerSubsystem;
+use std::time::Duration;
 
-pub fn play_music(context: &sdl2::Sdl){
-    let mcontext = sdl2::mixer::init(sdl2::mixer::InitFlag::OGG).unwrap();
-    mcontext.borrow();
-    sdl2::mixer::Music::from_file("./res/Menu_8BSD.ogg").unwrap().play(-1);
+pub fn play_music(context: &sdl2::Sdl, music: &mut Option<Music>){
+    let _audio = context.audio().unwrap();
+
+    let frequency = 44_100;
+    let format = AUDIO_S16LSB;
+    let channels = DEFAULT_CHANNELS;
+    let chunk_size = 1_024;
+
+    sdl2::mixer::open_audio(frequency, format, channels, chunk_size).unwrap();
+
+    let _mcontext = sdl2::mixer::init(sdl2::mixer::InitFlag::OGG).unwrap();
+
+    sdl2::mixer::allocate_channels(1);
+
+    fn hook_finished_music(){
+        println!("Musique finie !\n");
+    }
+
+    sdl2::mixer::Music::set_volume(16);
+
+    sdl2::mixer::Music::hook_finished(hook_finished_music);
+
+    let mtimer =  context.timer().unwrap().clone();
+
+
+
+    *music = Some(sdl2::mixer::Music::from_file("./res/Menu_8BSD.ogg").unwrap());
+
+
+
+
+
+
+
+
+
+
+
+
 }

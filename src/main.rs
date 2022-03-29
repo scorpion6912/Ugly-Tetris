@@ -17,15 +17,19 @@ use blocks::block::Block;
 use pieces::piece::Piece;
 use sdl2::rect::Rect;
 use rand::Rng;
-use sdl2::audio;
+use sdl2::{audio, TimerSubsystem};
 use crate::blocks::stack::Stack;
 use crate::music::play_music;
+use sdl2::mixer::Music;
 
 pub fn main() {
     //Initialisation
     let sdl_context = sdl2::init().unwrap();
 
-    play_music(&sdl_context);
+    let mut music:Option<Music> = None;
+    play_music(&sdl_context, &mut music);
+    music.unwrap().play(2).unwrap();
+
     let video_subsystem = sdl_context.video().unwrap();
 
     //Initialisation fenêtre
@@ -67,13 +71,16 @@ pub fn main() {
     let mut lastact:i32 = 0;
 
     let mut rng = rand::thread_rng(); // Random generator
-    let mut currentpiece:Piece = Piece::newActive(rng.gen_range(0,7));
+    let mut currentpiece:Piece = Piece::new_active(rng.gen_range(0, 7));
     let mut blockstack:Stack = Stack::init_stack();
 
     let mut rotating:bool = false;
     let mut goleft:bool = false;
     let mut goright:bool = false;
     let mut godown:bool = false;
+
+    let mut timer:TimerSubsystem = sdl_context.timer().unwrap();
+
 
     'running: loop {
         //Boucle du jeu
@@ -109,15 +116,15 @@ pub fn main() {
         }
         // Le reste de la boucle
 
-        if (goright){ currentpiece.moveRight(&blockstack); }
-        if (goleft){ currentpiece.moveLeft(&blockstack); }
+        if (goright){ currentpiece.move_right(&blockstack); }
+        if (goleft){ currentpiece.move_left(&blockstack); }
 
         if (rotating){ currentpiece.rotate(&blockstack,true); }
 
         if (godown){
             if (!currentpiece.go_down(&blockstack)){
                 currentpiece.pose(&mut blockstack);
-                currentpiece = Piece::newActive(rng.gen_range(0,7))
+                currentpiece = Piece::new_active(rng.gen_range(0, 7))
             }
         }
 
@@ -127,7 +134,7 @@ pub fn main() {
             //Toutes les 0.5s (on descend les pièces)
             if (!currentpiece.go_down(&blockstack)){
                 currentpiece.pose(&mut blockstack);
-                currentpiece = Piece::newActive(rng.gen_range(0,7))
+                currentpiece = Piece::new_active(rng.gen_range(0, 7))
             }
         }
 
@@ -135,7 +142,7 @@ pub fn main() {
 
         blockstack.draw(&mut canvas, &mut blocks_t);
         canvas.present();
-        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));// 60 FPS
+        timer.delay(17);//16,6 = 1000/60 donc 60FPS
     }
 }
 

@@ -35,7 +35,7 @@ impl Piece{
 
     pub fn go_down(&mut self, stack: &Stack) -> bool {
         for mut b in 0..4{
-            if (stack.isTaken(self.blocks[b].coords[0] as i16,self.blocks[b].coords[1] as i16+1)) { return false};
+            if (stack.is_taken(self.blocks[b].coords[0] as i16, self.blocks[b].coords[1] as i16+1)) { return false};
         }
 
         for mut b in 0..4{
@@ -82,12 +82,12 @@ impl Piece{
 
     pub fn rotate(&mut self, stack: &Stack, clockwise:bool){
         if (self.typeinfo == 1) { return; }
-        if (self.testRotationAndRotate(stack,self.x,self.y, clockwise)) { return ; }
+        if (self.test_rotation_and_rotate(stack, self.x, self.y, clockwise)) { return ; }
         match self.typeinfo {
             0 => {
                 /* POUR T */
                 //On sélectionne le 1er bloc selon si c'est dans le sens horaire ou antihoraire
-                if (self.testRotationAndRotate(
+                if (self.test_rotation_and_rotate(
                     stack,
                     self.blocks[3 - (clockwise as usize) * 3].coords[0] as f32,
                     self.blocks[3 - (clockwise as usize) * 3].coords[1] as f32,
@@ -96,7 +96,7 @@ impl Piece{
                     self.y = self.blocks[1].coords[1] as f32;
                     return ;
                 }
-                if (self.testRotationAndRotate(
+                if (self.test_rotation_and_rotate(
                     stack,
                     self.blocks[(clockwise as usize) * 3].coords[0] as f32,
                     self.blocks[(clockwise as usize) * 3].coords[1] as f32,
@@ -105,7 +105,7 @@ impl Piece{
                     self.y = self.blocks[1].coords[1] as f32;
                     return ;
                 }
-                if (self.testRotationAndRotate(
+                if (self.test_rotation_and_rotate(
                     stack,
                     self.blocks[2].coords[0] as f32,
                     self.blocks[2].coords[1] as f32,
@@ -127,7 +127,7 @@ impl Piece{
                     (self.blocks[0].coords[1] == self.blocks[1].coords[1] && (self.blocks[0].coords[0] < self.blocks[1].coords[0]) == clockwise)
                 ){
                     for mut i in 0..4{
-                        if (self.testRotationAndRotate(
+                        if (self.test_rotation_and_rotate(
                             stack,
                             self.blocks[i].coords[0] as f32,
                             self.blocks[i].coords[1] as f32,
@@ -141,7 +141,7 @@ impl Piece{
                     }
                 } else {
                     for mut i in 0..4{
-                        if (self.testRotationAndRotate(
+                        if (self.test_rotation_and_rotate(
                             stack,
                             self.blocks[3-i].coords[0] as f32,
                             self.blocks[3-i].coords[1] as f32,
@@ -161,7 +161,7 @@ impl Piece{
             3|4=>{
                 //Savoir si le 1e bloc est en bas (true) ou pas (false)
                 let fromdown:bool =  self.blocks[0].coords[1]>self.blocks[3].coords[1];
-                if (self.testRotationAndRotate(
+                if (self.test_rotation_and_rotate(
                     stack,
                     self.blocks[3-(fromdown as usize*3)].coords[0] as f32,
                     self.blocks[3-(fromdown as usize*3)].coords[1] as f32,
@@ -170,7 +170,7 @@ impl Piece{
                     self.y = self.blocks[2].coords[1] as f32;
                     return ;
                 }
-                if (self.testRotationAndRotate(
+                if (self.test_rotation_and_rotate(
                     stack,
                     self.blocks[1].coords[0] as f32,
                     self.blocks[1].coords[1] as f32,
@@ -179,7 +179,7 @@ impl Piece{
                     self.y = self.blocks[2].coords[1] as f32;
                     return ;
                 }
-                if (self.testRotationAndRotate(
+                if (self.test_rotation_and_rotate(
                     stack,
                     self.blocks[fromdown as usize*3].coords[0] as f32,
                     self.blocks[fromdown as usize*3].coords[1] as f32,
@@ -190,7 +190,7 @@ impl Piece{
                 }
             },
             5|6=>{
-                if (self.testRotationAndRotate(
+                if (self.test_rotation_and_rotate(
                     stack,
                     self.blocks[0].coords[0] as f32,
                     self.blocks[0].coords[1] as f32,
@@ -199,7 +199,7 @@ impl Piece{
                     self.y = self.blocks[1].coords[1] as f32;
                     return ;
                 }
-                if (self.testRotationAndRotate(
+                if (self.test_rotation_and_rotate(
                     stack,
                     self.blocks[3].coords[0] as f32,
                     self.blocks[3].coords[1] as f32,
@@ -208,7 +208,7 @@ impl Piece{
                     self.y = self.blocks[1].coords[1] as f32;
                     return ;
                 }
-                if (self.testRotationAndRotate(
+                if (self.test_rotation_and_rotate(
                     stack,
                     self.blocks[2].coords[0] as f32,
                     self.blocks[2].coords[1] as f32,
@@ -223,14 +223,14 @@ impl Piece{
     }
 
 
-    fn setNewBlocksAfterRotation(&mut self, bpos: &[[i16; 2]; 4], axisx:f32, axisy:f32){
+    fn set_new_blocks_after_rotation(&mut self, bpos: &[[i16; 2]; 4], axisx:f32, axisy:f32){
         for mut b in 0..4{
             self.blocks[b].coords[0] = bpos[b][0] as u8;
             self.blocks[b].coords[1] = bpos[b][1] as u8;
         }
     }
 
-    fn testRotationAndRotate(&mut self, stack:&Stack, axisx:f32, axisy:f32, clockwise:bool) -> bool {
+    fn test_rotation_and_rotate(&mut self, stack:&Stack, axisx:f32, axisy:f32, clockwise:bool) -> bool {
 
         let mut bpos:[[i16;2];4] = [[0,0],[0,0],[0,0],[0,0]];
         for mut b in 0..4{
@@ -238,19 +238,19 @@ impl Piece{
             bpos[b][1] = ((clockwise as u8 as f32 *2.0-1.0)*(self.blocks[b].coords[0] as f32 - axisx) + axisy).ceil() as i16;
         }
         for mut i in bpos{
-            if (stack.isTaken(i[0],i[1])) {
+            if (stack.is_taken(i[0], i[1])) {
 
                 return false
             };
         }
 
-        self.setNewBlocksAfterRotation(&bpos,axisx,axisy);
+        self.set_new_blocks_after_rotation(&bpos, axisx, axisy);
         return true;
     }
 
-    pub fn moveRight(&mut self, stack: &Stack){
+    pub fn move_right(&mut self, stack: &Stack){
         for mut b in 0..4{
-            if (stack.isTaken(self.blocks[b].coords[0] as i16+1,self.blocks[b].coords[1] as i16)) { return };
+            if (stack.is_taken(self.blocks[b].coords[0] as i16+1, self.blocks[b].coords[1] as i16)) { return };
         }
         for mut b in 0..4{
             self.blocks[b].coords[0] += 1;
@@ -258,9 +258,9 @@ impl Piece{
         self.x += 1.0;
     }
 
-    pub fn moveLeft(&mut self, stack: &Stack){
+    pub fn move_left(&mut self, stack: &Stack){
         for mut b in 0..4{
-            if (stack.isTaken(
+            if (stack.is_taken(
                 self.blocks[b].coords[0] as i16-1,
                 self.blocks[b].coords[1] as i16
             )) { return };
@@ -277,7 +277,7 @@ impl Piece{
         }
     }
 
-    pub fn newActive(piece_type:u8) -> Piece{
+    pub fn new_active(piece_type:u8) -> Piece{
         match piece_type {
             0 => return Piece {
                 typeinfo: 0,
