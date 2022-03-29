@@ -3,6 +3,48 @@ use sdl2::rect::Rect;
 use crate::blocks::block::Block;
 use crate::blocks::stack::Stack;
 use std::borrow::BorrowMut;
+use rand::Rng;
+
+pub(crate) struct PieceGen{
+    pub(crate) next: [u8;4],
+    remain: [u8;7]//Pièces restantes à tirer, 10 est considéré comme vide, sinon c'est entre 0 et 6 (incluse)
+}
+
+impl PieceGen{
+    pub fn next_piece_nb(&mut self) -> u8{
+
+        let to_return = self.next[0];
+        self.next[0] = self.next[1];
+        self.next[1] = self.next[2];
+        self.next[2] = self.next[3];
+
+        self.next[3] = self.gen_piece_nb();
+
+        return to_return;
+    }
+
+    pub fn new() -> PieceGen{
+        let mut piecegen = PieceGen{
+            next: [0,0,0,0],
+            remain: [0,1,2,3,4,5,6]
+        };
+        //On génère les 4 premières pièces
+        piecegen.next_piece_nb();
+        piecegen.next_piece_nb();
+        piecegen.next_piece_nb();
+        piecegen.next_piece_nb();
+
+        return piecegen
+    }
+
+    fn gen_piece_nb(&mut self) -> u8{
+
+        //Par la suite, on voudra que les pièces se génèrent en cycle (en gros on vide remain petit à petit et on la reremplit pour recommencer)
+        return rand::thread_rng().gen_range(0, 7);
+    }
+
+
+}
 
 
 pub(crate) struct Piece{
@@ -28,21 +70,25 @@ impl Piece{
 
 
     pub fn draw(&mut self, can:&mut WindowCanvas, blockt:&mut [Texture; 7]){
-        for mut b in 0..4{
+        for b in 0..4{
             self.blocks[b].draw_grid(can,blockt);
         }
     }
 
     pub fn go_down(&mut self, stack: &Stack) -> bool {
-        for mut b in 0..4{
+        for b in 0..4{
             if (stack.is_taken(self.blocks[b].coords[0] as i16, self.blocks[b].coords[1] as i16+1)) { return false};
         }
 
-        for mut b in 0..4{
+        for b in 0..4{
             self.blocks[b].coords[1] += 1;
         }
         self.y += 1.0;
         return true;
+    }
+
+    pub fn get_type(&mut self) -> u8 {
+        return self.typeinfo;
     }
 
     /*
@@ -126,7 +172,7 @@ impl Piece{
                     (self.blocks[0].coords[0] == self.blocks[1].coords[0] && self.blocks[0].coords[1] > self.blocks[1].coords[1])||
                     (self.blocks[0].coords[1] == self.blocks[1].coords[1] && (self.blocks[0].coords[0] < self.blocks[1].coords[0]) == clockwise)
                 ){
-                    for mut i in 0..4{
+                    for i in 0..4{
                         if (self.test_rotation_and_rotate(
                             stack,
                             self.blocks[i].coords[0] as f32,
@@ -140,12 +186,12 @@ impl Piece{
                             return ; }
                     }
                 } else {
-                    for mut i in 0..4{
-                        if (self.test_rotation_and_rotate(
+                    for i in 0..4{
+                        if self.test_rotation_and_rotate(
                             stack,
                             self.blocks[3-i].coords[0] as f32,
                             self.blocks[3-i].coords[1] as f32,
-                            clockwise)) {
+                            clockwise) {
                             //Remettre l'axe principal au bon endroit, (ce n'est pas très grave si il n'es pas sur la bonne longueur du rectangle, mais il doit être entre les 2 bons blocs)
                             let decal:bool = ((self.blocks[2].coords[0] as i16 - self.blocks[1].coords[0] as i16 )
                                 + (self.blocks[2].coords[1] as i16 - self.blocks[1].coords[1] as i16))>0;
@@ -161,58 +207,58 @@ impl Piece{
             3|4=>{
                 //Savoir si le 1e bloc est en bas (true) ou pas (false)
                 let fromdown:bool =  self.blocks[0].coords[1]>self.blocks[3].coords[1];
-                if (self.test_rotation_and_rotate(
+                if self.test_rotation_and_rotate(
                     stack,
                     self.blocks[3-(fromdown as usize*3)].coords[0] as f32,
                     self.blocks[3-(fromdown as usize*3)].coords[1] as f32,
-                    clockwise)) {
+                    clockwise) {
                     self.x = self.blocks[2].coords[0] as f32;
                     self.y = self.blocks[2].coords[1] as f32;
                     return ;
                 }
-                if (self.test_rotation_and_rotate(
+                if self.test_rotation_and_rotate(
                     stack,
                     self.blocks[1].coords[0] as f32,
                     self.blocks[1].coords[1] as f32,
-                    clockwise)) {
+                    clockwise) {
                     self.x = self.blocks[2].coords[0] as f32;
                     self.y = self.blocks[2].coords[1] as f32;
                     return ;
                 }
-                if (self.test_rotation_and_rotate(
+                if self.test_rotation_and_rotate(
                     stack,
                     self.blocks[fromdown as usize*3].coords[0] as f32,
                     self.blocks[fromdown as usize*3].coords[1] as f32,
-                    clockwise)) {
+                    clockwise) {
                     self.x = self.blocks[2].coords[0] as f32;
                     self.y = self.blocks[2].coords[1] as f32;
                     return ;
                 }
             },
             5|6=>{
-                if (self.test_rotation_and_rotate(
+                if self.test_rotation_and_rotate(
                     stack,
                     self.blocks[0].coords[0] as f32,
                     self.blocks[0].coords[1] as f32,
-                    clockwise)) {
+                    clockwise) {
                     self.x = self.blocks[1].coords[0] as f32;
                     self.y = self.blocks[1].coords[1] as f32;
                     return ;
                 }
-                if (self.test_rotation_and_rotate(
+                if self.test_rotation_and_rotate(
                     stack,
                     self.blocks[3].coords[0] as f32,
                     self.blocks[3].coords[1] as f32,
-                    clockwise)) {
+                    clockwise) {
                     self.x = self.blocks[1].coords[0] as f32;
                     self.y = self.blocks[1].coords[1] as f32;
                     return ;
                 }
-                if (self.test_rotation_and_rotate(
+                if self.test_rotation_and_rotate(
                     stack,
                     self.blocks[2].coords[0] as f32,
                     self.blocks[2].coords[1] as f32,
-                    clockwise)) {
+                    clockwise) {
                     self.x = self.blocks[1].coords[0] as f32;
                     self.y = self.blocks[1].coords[1] as f32;
                     return ;
@@ -223,8 +269,8 @@ impl Piece{
     }
 
 
-    fn set_new_blocks_after_rotation(&mut self, bpos: &[[i16; 2]; 4], axisx:f32, axisy:f32){
-        for mut b in 0..4{
+    fn set_new_blocks_after_rotation(&mut self, bpos: &[[i16; 2]; 4], _axisx:f32, _axisy:f32){
+        for b in 0..4{
             self.blocks[b].coords[0] = bpos[b][0] as u8;
             self.blocks[b].coords[1] = bpos[b][1] as u8;
         }
@@ -233,12 +279,12 @@ impl Piece{
     fn test_rotation_and_rotate(&mut self, stack:&Stack, axisx:f32, axisy:f32, clockwise:bool) -> bool {
 
         let mut bpos:[[i16;2];4] = [[0,0],[0,0],[0,0],[0,0]];
-        for mut b in 0..4{
+        for b in 0..4{
             bpos[b][0] = (-(clockwise as u8 as f32 *2.0-1.0)*(self.blocks[b].coords[1] as f32 - axisy) + axisx).ceil() as i16;
             bpos[b][1] = ((clockwise as u8 as f32 *2.0-1.0)*(self.blocks[b].coords[0] as f32 - axisx) + axisy).ceil() as i16;
         }
-        for mut i in bpos{
-            if (stack.is_taken(i[0], i[1])) {
+        for i in bpos{
+            if stack.is_taken(i[0], i[1]) {
 
                 return false
             };
@@ -249,23 +295,23 @@ impl Piece{
     }
 
     pub fn move_right(&mut self, stack: &Stack){
-        for mut b in 0..4{
-            if (stack.is_taken(self.blocks[b].coords[0] as i16+1, self.blocks[b].coords[1] as i16)) { return };
+        for b in 0..4{
+            if stack.is_taken(self.blocks[b].coords[0] as i16+1, self.blocks[b].coords[1] as i16) { return };
         }
-        for mut b in 0..4{
+        for b in 0..4{
             self.blocks[b].coords[0] += 1;
         }
         self.x += 1.0;
     }
 
     pub fn move_left(&mut self, stack: &Stack){
-        for mut b in 0..4{
-            if (stack.is_taken(
+        for b in 0..4{
+            if stack.is_taken(
                 self.blocks[b].coords[0] as i16-1,
                 self.blocks[b].coords[1] as i16
-            )) { return };
+            ) { return };
         }
-        for mut b in 0..4{
+        for b in 0..4{
             self.blocks[b].coords[0] -= 1;
         }
         self.x -= 1.0;
@@ -288,25 +334,25 @@ impl Piece{
                     Block {
                         rect: Rect::new(0, 0, 28, 28),
                         color: 0,
-                        posed: false,
+
                         coords: [4,0]
                     },
                     Block {
                         rect: Rect::new(0, 0, 28, 28),
                         color: 0,
-                        posed: false,
+
                         coords: [4,1]
                     },
                     Block {
                         rect: Rect::new(0, 0, 28, 28),
                         color: 0,
-                        posed: false,
+
                         coords: [5,1]
                     },
                     Block {
                         rect: Rect::new(0, 0, 28, 28),
                         color: 0,
-                        posed: false,
+
                         coords: [4,2]
                     }
                 ]
@@ -320,25 +366,25 @@ impl Piece{
                     Block {
                         rect: Rect::new(0, 0, 28, 28),
                         color: 1,
-                        posed: false,
+
                         coords: [4,0]
                     },
                     Block {
                         rect: Rect::new(0, 0, 28, 28),
                         color: 1,
-                        posed: false,
+
                         coords: [4,1]
                     },
                     Block {
                         rect: Rect::new(0, 0, 28, 28),
                         color: 1,
-                        posed: false,
+
                         coords: [5,0]
                     },
                     Block {
                         rect: Rect::new(0, 0, 28, 28),
                         color: 1,
-                        posed: false,
+
                         coords: [5,1]
                     }
                 ]
@@ -352,25 +398,25 @@ impl Piece{
                     Block {
                         rect: Rect::new(0,0, 28, 28),
                         color: 2,
-                        posed: false,
+
                         coords: [4,0]
                     },
                     Block {
                         rect: Rect::new(0, 0, 28, 28),
                         color: 2,
-                        posed: false,
+
                         coords: [4,1]
                     },
                     Block {
                         rect: Rect::new(0, 0, 28, 28),
                         color: 2,
-                        posed: false,
+
                         coords: [4,2]
                     },
                     Block {
                         rect: Rect::new(0, 0, 28, 28),
                         color: 2,
-                        posed: false,
+
                         coords: [4,3]
                     }
                 ]
@@ -384,25 +430,25 @@ impl Piece{
                     Block {
                         rect: Rect::new(0, 0, 28, 28),
                         color: 3,
-                        posed: false,
+
                         coords: [4,0]
                     },
                     Block {
                         rect: Rect::new(0, 0, 28, 28),
                         color: 3,
-                        posed: false,
+
                         coords: [4,1]
                     },
                     Block {
                         rect: Rect::new(0, 0, 28, 28),
                         color: 3,
-                        posed: false,
+
                         coords: [5,1]
                     },
                     Block {
                         rect: Rect::new(0, 0, 28, 28),
                         color: 3,
-                        posed: false,
+
                         coords: [5,2]
                     }
                 ]
@@ -416,25 +462,25 @@ impl Piece{
                     Block {
                         rect: Rect::new(0,0, 28, 28),
                         color: 4,
-                        posed: false,
+
                         coords: [5,0]
                     },
                     Block {
                         rect: Rect::new(0, 0, 28, 28),
                         color: 4,
-                        posed: false,
+
                         coords: [5,1]
                     },
                     Block {
                         rect: Rect::new(0, 0, 28, 28),
                         color: 4,
-                        posed: false,
+
                         coords: [4,1]
                     },
                     Block {
                         rect: Rect::new(0, 0, 28, 28),
                         color: 4,
-                        posed: false,
+
                         coords: [4,2]
                     }
                 ]
@@ -448,25 +494,25 @@ impl Piece{
                     Block {
                         rect: Rect::new(0, 0, 28, 28),
                         color: 5,
-                        posed: false,
+
                         coords: [4,0]
                     },
                     Block {
                         rect: Rect::new(0, 0, 28, 28),
                         color: 5,
-                        posed: false,
+
                         coords: [4,1]
                     },
                     Block {
                         rect: Rect::new(0, 0, 28, 28),
                         color: 5,
-                        posed: false,
+
                         coords: [4,2]
                     },
                     Block {
                         rect: Rect::new(0, 0, 28, 28),
                         color: 5,
-                        posed: false,
+
                         coords: [5,2]
                     }
                 ]
@@ -480,25 +526,25 @@ impl Piece{
                     Block {
                         rect: Rect::new(0, 0, 28, 28),
                         color: 6,
-                        posed: false,
+
                         coords: [5,0]
                     },
                     Block {
                         rect: Rect::new(0, 0, 28, 28),
                         color: 6,
-                        posed: false,
+
                         coords: [5,1]
                     },
                     Block {
                         rect: Rect::new(0, 0, 28, 28),
                         color: 6,
-                        posed: false,
+
                         coords: [5,2]
                     },
                     Block {
                         rect: Rect::new(0, 0, 28, 28),
                         color: 6,
-                        posed: false,
+
                         coords: [4,2]
                     }
                 ]

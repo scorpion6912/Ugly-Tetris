@@ -31,11 +31,10 @@ impl Stack{
         let mut block:Block<[u8;2]> = Block{
             rect: Rect::new(0,0,28,28),
             color: 0,
-            posed: true,
             coords: [0,0]
         };
-        for mut i in 0..10{
-            for mut j in 0..19{
+        for i in 0..10{
+            for j in 0..19{
                 if (self.blocks[i][j] != 10){
                     block.color = self.blocks[i][j] as usize;
                     block.coords = [i as u8,j as u8];
@@ -53,5 +52,34 @@ impl Stack{
 
     pub fn add(&mut self, x: usize, y: usize, color:u8){
         self.blocks[x][y] = color;
+    }
+
+    fn remove_line(&mut self, i:usize){
+        for j in 0..i-1{
+            //Ligne suivante = ligne actuelle au dessus de la ligne à supprimer (on décale)
+            for k in 0..10{
+                self.blocks[k][i-j] = self.blocks[k][i-j-1];
+            }
+        }
+        //On vide la ligne 1
+        for k in 0..10{
+            self.blocks[k][0] = 10;
+        }
+    }
+
+    pub fn verify_lines(&mut self){
+        for i in 0..19{
+            if self.line_full(i){
+                self.remove_line(i);
+                return self.verify_lines();
+            }
+        }
+    }
+
+    fn line_full(&mut self, i:usize) -> bool {
+        for j in 0..10{
+            if self.blocks[j][i] == 10 { return false; }
+        }
+        return true;
     }
 }

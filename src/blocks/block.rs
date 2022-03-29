@@ -25,7 +25,6 @@ const DECAL_Y: i32 = 3;
 pub struct Block<T>{
     pub(crate) rect: Rect,
     pub(crate) color: usize,
-    pub(crate) posed: bool,
     pub(crate) coords: T
 }
 
@@ -36,7 +35,6 @@ pub fn init_textures(blocks_texture: &mut [Texture; 7]){
 }
 
 impl<T> Block<T>{
-
 
 
     pub fn draw(&self, can:&mut WindowCanvas, blockt:&mut [Texture; 7]){
