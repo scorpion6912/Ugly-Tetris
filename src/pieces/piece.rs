@@ -2,12 +2,11 @@ use sdl2::render::{Texture, WindowCanvas};
 use sdl2::rect::Rect;
 use crate::blocks::block::Block;
 use crate::blocks::stack::Stack;
-use std::borrow::BorrowMut;
 use rand::Rng;
 
 pub(crate) struct PieceGen{
     pub(crate) next: [u8;4],
-    remain: [u8;7]//Pièces restantes à tirer, 10 est considéré comme vide, sinon c'est entre 0 et 6 (incluse)
+    remain: [u8;7]//Pieces restantes à tirer, 10 est considéré comme vide, sinon c'est entre 0 et 6 (incluse)
 }
 
 impl PieceGen{
@@ -40,7 +39,19 @@ impl PieceGen{
     fn gen_piece_nb(&mut self) -> u8{
 
         //Par la suite, on voudra que les pièces se génèrent en cycle (en gros on vide remain petit à petit et on la reremplit pour recommencer)
-        return rand::thread_rng().gen_range(0, 7);
+        let mut sommet =10;
+        for i in 0..7{
+            if self.remain[i]!=10 { sommet = i};
+        }
+        if sommet==10{
+            for i in 0..7{
+                self.remain[i]= rand::thread_rng().gen_range(0, 7-i) as u8;
+            }
+            sommet = 6;
+        }
+        let generated = self.remain[sommet] as u8;
+        self.remain[sommet] = 10;
+        return generated;
     }
 
 
@@ -68,6 +79,14 @@ pub(crate) struct Piece{
  */
 impl Piece{
 
+    //Utilisé pour les tests unitaires
+    pub fn get_blocks_pos(&mut self) -> Vec<[u8; 2]> {
+        let mut arr:Vec<[u8;2]> = vec!();
+        for b in &self.blocks{
+            arr.push(b.coords);
+        }
+        return arr;
+    }
 
     pub fn draw(&mut self, can:&mut WindowCanvas, blockt:&mut [Texture; 7]){
         for b in 0..4{
@@ -77,7 +96,7 @@ impl Piece{
 
     pub fn go_down(&mut self, stack: &Stack) -> bool {
         for b in 0..4{
-            if (stack.is_taken(self.blocks[b].coords[0] as i16, self.blocks[b].coords[1] as i16+1)) { return false};
+            if stack.is_taken(self.blocks[b].coords[0] as i16, self.blocks[b].coords[1] as i16+1) { return false};
         }
 
         for b in 0..4{
@@ -127,35 +146,35 @@ impl Piece{
 
 
     pub fn rotate(&mut self, stack: &Stack, clockwise:bool){
-        if (self.typeinfo == 1) { return; }
-        if (self.test_rotation_and_rotate(stack, self.x, self.y, clockwise)) { return ; }
+        if self.typeinfo == 1 { return; }
+        if self.test_rotation_and_rotate(stack, self.x, self.y, clockwise) { return ; }
         match self.typeinfo {
             0 => {
                 /* POUR T */
                 //On sélectionne le 1er bloc selon si c'est dans le sens horaire ou antihoraire
-                if (self.test_rotation_and_rotate(
+                if self.test_rotation_and_rotate(
                     stack,
                     self.blocks[3 - (clockwise as usize) * 3].coords[0] as f32,
                     self.blocks[3 - (clockwise as usize) * 3].coords[1] as f32,
-                    clockwise)) {
+                    clockwise) {
                     self.x = self.blocks[1].coords[0] as f32;
                     self.y = self.blocks[1].coords[1] as f32;
                     return ;
                 }
-                if (self.test_rotation_and_rotate(
+                if self.test_rotation_and_rotate(
                     stack,
                     self.blocks[(clockwise as usize) * 3].coords[0] as f32,
                     self.blocks[(clockwise as usize) * 3].coords[1] as f32,
-                    clockwise)) {
+                    clockwise) {
                     self.x = self.blocks[1].coords[0] as f32;
                     self.y = self.blocks[1].coords[1] as f32;
                     return ;
                 }
-                if (self.test_rotation_and_rotate(
+                if self.test_rotation_and_rotate(
                     stack,
                     self.blocks[2].coords[0] as f32,
                     self.blocks[2].coords[1] as f32,
-                    clockwise)) {
+                    clockwise) {
                     self.x = self.blocks[1].coords[0] as f32;
                     self.y = self.blocks[1].coords[1] as f32;
                     return ;
@@ -168,16 +187,16 @@ impl Piece{
 
                 //On teste si la pièce est à la verticale & du plus bas au plus haut
                 //ou si la pièce est à l'horizontale et que lacondition "la première pièce est plus à gauche" = clockwise
-                if (
+                if
                     (self.blocks[0].coords[0] == self.blocks[1].coords[0] && self.blocks[0].coords[1] > self.blocks[1].coords[1])||
                     (self.blocks[0].coords[1] == self.blocks[1].coords[1] && (self.blocks[0].coords[0] < self.blocks[1].coords[0]) == clockwise)
-                ){
+                {
                     for i in 0..4{
-                        if (self.test_rotation_and_rotate(
+                        if self.test_rotation_and_rotate(
                             stack,
                             self.blocks[i].coords[0] as f32,
                             self.blocks[i].coords[1] as f32,
-                            clockwise)) {
+                            clockwise) {
                                 //Remettre l'axe principal au bon endroit, (ce n'est pas très grave si il n'es pas sur la bonne longueur du rectangle, mais il doit être entre les 2 bons blocs)
                                 let decal:bool = ((self.blocks[2].coords[0] as i16 - self.blocks[1].coords[0] as i16 )
                                 + (self.blocks[2].coords[1] as i16 - self.blocks[1].coords[1] as i16))>0;

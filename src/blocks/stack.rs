@@ -35,7 +35,7 @@ impl Stack{
         };
         for i in 0..10{
             for j in 0..19{
-                if (self.blocks[i][j] != 10){
+                if self.blocks[i][j] != 10{
                     block.color = self.blocks[i][j] as usize;
                     block.coords = [i as u8,j as u8];
                     block.draw_grid(can,blockt);
@@ -46,7 +46,7 @@ impl Stack{
     }
     
     pub fn is_taken(&self, x:i16, y:i16) -> bool {
-        if (x>9 || y>18 || x<0 || y<0){ return true; }
+        if x>9 || y>18 || x<0 || y<0{ return true; }
         return self.blocks[x as usize][y as usize] < 10;
     }
 
@@ -67,13 +67,14 @@ impl Stack{
         }
     }
 
-    pub fn verify_lines(&mut self){
+    pub fn verify_lines(&mut self, sum:i32) -> i32 {
         for i in 0..19{
             if self.line_full(i){
                 self.remove_line(i);
-                return self.verify_lines();
+                return self.verify_lines(sum+1);
             }
         }
+        return sum;
     }
 
     fn line_full(&mut self, i:usize) -> bool {

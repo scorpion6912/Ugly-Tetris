@@ -4,22 +4,20 @@ extern crate sdl2;
 mod blocks;
 mod pieces;
 mod music;
+mod score;
+mod unit_testing;
 
-use sdl2::pixels::{Color, PixelFormatEnum};
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
-use std::time::Duration;
 use sdl2::surface::Surface;
-use sdl2::render::{Texture, WindowCanvas, TextureCreator};
-use std::borrow::{Borrow, BorrowMut};
-use sdl2::video::WindowContext;
+use sdl2::render::Texture;
+use std::borrow::Borrow;
 use blocks::block::Block;
 use pieces::piece::{Piece,PieceGen};
-use sdl2::rect::Rect;
-use sdl2::{audio, TimerSubsystem};
+use sdl2::TimerSubsystem;
 use crate::blocks::stack::Stack;
 use crate::music::play_music;
-use sdl2::mixer::Music;
+use crate::score::display_score;
 use crate::pieces::offgrid::{hold_draw, next_draw};
 
 pub fn main() {
@@ -49,6 +47,11 @@ pub fn main() {
     let bg_s = Surface::load_bmp("./res/bg.bmp").unwrap();
     let bg = bg_s.as_texture(tcreator.borrow()).unwrap();
 
+    let mut score = 0;
+
+    let num_s = Surface::load_bmp("./res/num.bmp").unwrap();
+    let numt = num_s.as_texture(tcreator.borrow()).unwrap();
+
     /*
      - Chargement de la texture "block"
      */
@@ -72,13 +75,13 @@ pub fn main() {
     let mut blockstack:Stack = Stack::init_stack();
 
     //Evenements (input utilisateur)
-    let mut rotatingright:bool = false;//Rotation horaire
-    let mut rotatingleft:bool = false;//Rotation anti-horaire
-    let mut goleft:bool = false;
-    let mut goright:bool = false;
-    let mut godown:bool = false;//Aller en bas (lentement)
-    let mut rushdown:bool = false;//Aller en bas d'un coup
-    let mut switching:bool = false;//Inverser avec la piece "Hold"
+    let mut rotatingright:bool;//Rotation horaire
+    let mut rotatingleft:bool;//Rotation anti-horaire
+    let mut goleft:bool;
+    let mut goright:bool;
+    let mut godown:bool;//Aller en bas (lentement)
+    let mut rushdown:bool;//Aller en bas d'un coup
+    let mut switching:bool;//Inverser avec la piece "Hold"
 
 
     let mut piecegen = PieceGen::new();
@@ -154,13 +157,13 @@ pub fn main() {
         }
 
         if rushdown{
-            while currentpiece.go_down(&blockstack){ ; };
+            while currentpiece.go_down(&blockstack){};
             currentpiece.pose(&mut blockstack);
             currentpiece = Piece::new_active(piecegen.next_piece_nb());
             switchable = true;
         }
 
-        if (switchable && switching){
+        if switchable && switching{
             //On inverse le hold et la currentpiece
             switchable = false;
             let tmptype = switchtype;
@@ -189,8 +192,9 @@ pub fn main() {
         hold_draw(switchtype as usize, &mut canvas, &mut blocks_t);
         next_draw(piecegen.next,&mut canvas, &mut blocks_t);
 
-        blockstack.verify_lines();
+        score += blockstack.verify_lines(0);
         blockstack.draw(&mut canvas, &mut blocks_t);
+        display_score(score.clone(),&numt, &mut canvas);
         canvas.present();
 
         timer.delay(17);//16,6 = 1000/60 donc 60FPS

@@ -28,15 +28,11 @@ pub fn play_music(context: &sdl2::Sdl){
 */
 
 
-use std::borrow::{Borrow, BorrowMut};
-use sdl2::mixer::{AUDIO_S16LSB, DEFAULT_CHANNELS, InitFlag, Music, Sdl2MixerContext};
-use std::thread;
-use sdl2::TimerSubsystem;
-use std::time::Duration;
+use sdl2::mixer::{AUDIO_S16LSB, DEFAULT_CHANNELS, Music, Sdl2MixerContext};
 
 pub struct MusicPlayer{
-    pub(crate) music: Music<'static>,
-    pub(crate) context: Sdl2MixerContext
+    pub(crate) _music: Music<'static>,
+    pub(crate) _context: Sdl2MixerContext
 }
 
 pub fn play_music(_context: &sdl2::Sdl) -> MusicPlayer {
@@ -73,7 +69,7 @@ pub fn play_music(_context: &sdl2::Sdl) -> MusicPlayer {
 
     music.play(-1).unwrap();
 
-    let player = MusicPlayer{music:music, context:mcontext};
+    let player = MusicPlayer{_music:music, _context:mcontext};
 
     return player;
 

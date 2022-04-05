@@ -1,10 +1,6 @@
-use sdl2::render::{WindowCanvas, Texture, TextureCreator};
-use sdl2::surface::Surface;
+use sdl2::render::{WindowCanvas, Texture};
 use sdl2::rect::Rect;
-use sdl2::pixels::PixelFormatEnum;
 use std::borrow::Borrow;
-use sdl2::video::WindowContext;
-use std::option::Option;
 
 
 const BCOLORS:[[u8; 3]; 7] = [
@@ -41,7 +37,7 @@ impl<T> Block<T>{
             can.copy(blockt[self.color].borrow(), None, self.rect).unwrap();
     }
 
-    pub fn set_x(&mut self, x:i32){
+    /*pub fn set_x(&mut self, x:i32){
         self.rect.set_x(x);
     } // ! met à jour l'abscisse réelle, pas celle dans la grille
 
@@ -55,7 +51,7 @@ impl<T> Block<T>{
 
     pub fn get_y(&mut self, y:i32){
         self.rect.set_y(y);
-    }
+    }*/
 }
 
 impl Block<[u8;2]>{

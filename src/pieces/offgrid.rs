@@ -1,4 +1,3 @@
-use std::borrow::Borrow;
 use sdl2::rect::Rect;
 use sdl2::render::{Texture, WindowCanvas};
 use crate::Block;
@@ -166,7 +165,7 @@ pub fn offgrid_piece(typepiece:usize, decalx:i32, decaly:i32) -> [Block<()>; 4] 
 }
 
 pub fn hold_draw(piecetype:usize,can:&mut WindowCanvas, blockt:&mut [Texture; 7]){
-    if (piecetype >= 7) {return}
+    if piecetype >= 7 {return}
     for b in offgrid_piece(piecetype,30,50){
         b.draw(can,blockt);
     }
