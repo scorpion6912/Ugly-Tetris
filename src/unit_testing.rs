@@ -1,17 +1,17 @@
-use pieces::piece::Piece;
-use crate::pieces;
+
 
 #[cfg(test)]
 mod tests {
     use crate::{PieceGen, Stack};
-    use super::*;
+    use pieces::piece::Piece;
+    use crate::pieces;
 
     #[test]
     fn test_rotation_simple() {
         let test_stack = Stack::init_stack();
         let mut piece = Piece::new_active(2);//Pièce I
         piece.rotate(&test_stack, true);
-        let positions = piece.get_blocks_pos();
+        let positions = piece._get_blocks_pos();
         assert!(
             positions.get(0).unwrap() == &[6,1]&&
             positions.get(1).unwrap() == &[5,1]&&
@@ -26,7 +26,7 @@ mod tests {
         let mut piece = Piece::new_active(5);
         for _i in 0..8{ piece.move_left(&test_stack);}
         piece.rotate(&test_stack, false);
-        let positions = piece.get_blocks_pos();
+        let positions = piece._get_blocks_pos();
         assert!(
             positions.get(0).unwrap() == &[0,0]&&
             positions.get(1).unwrap() == &[0,1]&&
@@ -69,6 +69,14 @@ mod tests {
         for i in 0..9{stack.add(i, 15, 1);}
 
         assert!(stack.verify_lines(0)==2);
+    }
+
+    #[test]
+    fn test_game_over(){
+        let mut stack = Stack::init_stack();
+        let piece = Piece::new_active(5);
+        for i in 2..8{stack.add(i, 0, 1);}
+        assert!(!piece.pose(&mut stack));
     }
 
 }

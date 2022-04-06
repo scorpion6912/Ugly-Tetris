@@ -50,8 +50,11 @@ impl Stack{
         return self.blocks[x as usize][y as usize] < 10;
     }
 
-    pub fn add(&mut self, x: usize, y: usize, color:u8){
+    pub fn add(&mut self, x: usize, y: usize, color:u8) -> bool {
+        if self.blocks[x][y] != 10 { return false; }
         self.blocks[x][y] = color;
+        return true;
+
     }
 
     fn remove_line(&mut self, i:usize){
@@ -83,4 +86,5 @@ impl Stack{
         }
         return true;
     }
+
 }

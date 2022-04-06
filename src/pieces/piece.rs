@@ -80,7 +80,7 @@ pub(crate) struct Piece{
 impl Piece{
 
     //Utilisé pour les tests unitaires
-    pub fn get_blocks_pos(&mut self) -> Vec<[u8; 2]> {
+    pub fn _get_blocks_pos(&mut self) -> Vec<[u8; 2]> {
         let mut arr:Vec<[u8;2]> = vec!();
         for b in &self.blocks{
             arr.push(b.coords);
@@ -336,10 +336,11 @@ impl Piece{
         self.x -= 1.0;
     }
 
-    pub fn pose(&self, stack:&mut Stack){
+    pub fn pose(&self, stack:&mut Stack) -> bool {
         for b in &self.blocks{
-            stack.add(b.coords[0] as usize,b.coords[1] as usize,b.color as u8);
+            if !stack.add(b.coords[0] as usize,b.coords[1] as usize,b.color as u8) {return false};
         }
+        return true;
     }
 
     pub fn new_active(piece_type:u8) -> Piece{

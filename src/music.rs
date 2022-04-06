@@ -57,11 +57,11 @@ pub fn play_music(_context: &sdl2::Sdl) -> MusicPlayer {
 
     sdl2::mixer::Music::hook_finished(hook_finished_music);
 
-    println!("Chunk decoders : {}" , sdl2::mixer::get_chunk_decoders_number());
-    println!("Music decoders : {}" , sdl2::mixer::get_music_decoders_number());
-    println!("Paused channels : {}" , sdl2::mixer::get_paused_channels_number());
-    println!("Volume : {}" , sdl2::mixer::Music::get_volume());
-    println!("Playing channels : {}" , sdl2::mixer::get_playing_channels_number());
+    println!("[MUSIC]Chunk decoders : {}" , sdl2::mixer::get_chunk_decoders_number());
+    println!("[MUSIC]Music decoders : {}" , sdl2::mixer::get_music_decoders_number());
+    println!("[MUSIC]Paused channels : {}" , sdl2::mixer::get_paused_channels_number());
+    println!("[MUSIC]Volume : {}" , sdl2::mixer::Music::get_volume());
+    println!("[MUSIC]Playing channels : {}" , sdl2::mixer::get_playing_channels_number());
 
 
     let music =  sdl2::mixer::Music::from_file("./res/Menu_8BSD.ogg").unwrap();

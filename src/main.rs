@@ -50,6 +50,10 @@ pub fn main() {
     let bg_s = Surface::load_bmp("./res/bg.bmp").unwrap();
     let bg = bg_s.as_texture(tcreator.borrow()).unwrap();
 
+    // - game over
+    let go_s = Surface::load_bmp("./res/gameover.bmp").unwrap();
+    let go_t = go_s.as_texture(tcreator.borrow()).unwrap();
+
     let mut score = 0;
 
     let num_s = Surface::load_bmp("./res/num.bmp").unwrap();
@@ -76,6 +80,8 @@ pub fn main() {
 
 
     let mut blockstack:Stack = Stack::init_stack();
+
+    let mut gameover:bool = false;
 
     //Evenements (input utilisateur)
     let mut rotatingright:bool;//Rotation horaire
@@ -153,7 +159,11 @@ pub fn main() {
 
         if godown{
             if !currentpiece.go_down(&blockstack){
-                currentpiece.pose(&mut blockstack);
+                //Si on peut pas poser: GAME OVER
+                if !currentpiece.pose(&mut blockstack) {
+                    gameover = true;
+                    break 'running;
+                };
                 currentpiece = Piece::new_active(piecegen.next_piece_nb());
                 switchable = true;
             }
@@ -161,7 +171,11 @@ pub fn main() {
 
         if rushdown{
             while currentpiece.go_down(&blockstack){};
-            currentpiece.pose(&mut blockstack);
+            //Si on peut pas poser: GAME OVER
+            if !currentpiece.pose(&mut blockstack) {
+                gameover = true;
+                break 'running;
+            };
             currentpiece = Piece::new_active(piecegen.next_piece_nb());
             switchable = true;
         }
@@ -183,7 +197,12 @@ pub fn main() {
             lastact = 0;
             //Toutes les 0.5s (on descend les pièces)
             if !currentpiece.go_down(&blockstack){
-                currentpiece.pose(&mut blockstack);
+
+                //Si on peut pas poser: GAME OVER
+                if !currentpiece.pose(&mut blockstack) {
+                    gameover = true;
+                    break 'running;
+                };
                 currentpiece = Piece::new_active(piecegen.next_piece_nb());
                 switchable = true;
             }
@@ -202,6 +221,14 @@ pub fn main() {
 
         timer.delay(17);//16,6 = 1000/60 donc 60FPS
     }
+    if gameover{
+        canvas.copy(&go_t,None, None).unwrap();
+        display_score(score.clone(),&numt, &mut canvas);
+        canvas.present();
+        timer.delay(3000);
+    }
+
 }
+
 
 
