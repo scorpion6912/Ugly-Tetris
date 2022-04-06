@@ -30,10 +30,13 @@ pub fn main() {
     let video_subsystem = sdl_context.video().unwrap();
 
     //Initialisation fenêtre
-    let window = video_subsystem.window("Ugly Tetris", 800, 600)
+    let mut window = video_subsystem.window("Ugly Tetris", 800, 600)
         .position_centered()
         .build()
         .unwrap();
+    let icon_s = Surface::load_bmp("./res/block.bmp").unwrap();
+
+    window.set_icon(icon_s);
 
     let mut canvas = window.into_canvas().build().unwrap();
 
